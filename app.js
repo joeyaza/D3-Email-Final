@@ -69,11 +69,15 @@ var svg = d3.select("#bar-chart").append("svg")
       .attr("y", function(d) { return y(d.Campaign); })
       .attr("height", y.bandwidth())
       .on("mousemove", function(d){
+          var total = d3.sum(dataByCamp.map(function(d) {
+             return d.Value;                     
+          }));
+        var percent = Math.round(100 * d.Value / total)
             tooltip
               .style("left", d3.event.pageX - 50 + "px")
               .style("top", d3.event.pageY - 70 + "px")
               .style("display", "inline-block")
-              .html((d.Campaign) + "<br>" + (d.Value) + " Clicks");
+              .html((d.Campaign) + "<br>" + (d.Value) + " Clicks" + "<br>" + percent + " %" );
         })
         .on("mouseout", function(d){ tooltip.style("display", "none");});
 
