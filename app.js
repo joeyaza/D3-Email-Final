@@ -2,18 +2,18 @@
 // BAR CHART //////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-
-
 // set the dimensions and margins of the graph
-    var margin = {
-        top: 40,
-        right: 55,
-        bottom: 35,
-        left: 90
-    };
+var margin = {
+    top: 40,
+    right: 55,
+    bottom: 35,
+    left: 90
+};
 
-    var width = 500 - margin.left - margin.right,
-        height = 300 - margin.top - margin.bottom;
+var width = 500 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
 // set the ranges
 var y = d3.scaleBand()
@@ -67,36 +67,24 @@ var svg = d3.select("#bar-chart").append("svg")
       //.attr("x", function(d) { return x(d.Value); })
       .attr("width", function(d) {return x(d.Value); } )
       .attr("y", function(d) { return y(d.Campaign); })
-      .attr("height", y.bandwidth());
+      .attr("height", y.bandwidth())
+      .on("mousemove", function(d){
+            tooltip
+              .style("left", d3.event.pageX - 50 + "px")
+              .style("top", d3.event.pageY - 70 + "px")
+              .style("display", "inline-block")
+              .html((d.Campaign) + "<br>" + (d.Value) + " Clicks");
+        })
+        .on("mouseout", function(d){ tooltip.style("display", "none");});
 
   // add the x Axis
   svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x).ticks(5).tickFormat(function(d) { return parseInt(d); }).tickSizeInner([-height]));
 
   // add the y Axis
   svg.append("g")
       .call(d3.axisLeft(y));
-
-          var bars = svg.selectAll(".bar")
-        .data(data)
-        .enter()
-        .append("g")
-
-
-       bars.append("text")
-          .attr("class", "label")
-          //y position of the label is halfway down the bar
-          .attr("y", function (d) {
-              return y(d.Campaign) + y.bandwidth() / 2 + 4;
-          })
-          //x position is 3 pixels to the right of the bar
-          .attr("x", function (d) {
-              return x(d.Value) + 3;
-          })
-          .text(function (d) {
-              return d.Value;
-          });
 });
 
 
