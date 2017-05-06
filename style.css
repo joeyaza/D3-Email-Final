@@ -1,0 +1,25 @@
+
+
+body {
+  font-family: "Arial", sans-serif;
+}
+
+svg {
+    border: 2px solid grey;
+}
+
+.bar {
+    fill: blue;
+}
+
+.axis {
+    font-size: 13px;
+}
+
+path.domain, .tick line {
+  display: none;
+}
+
+.label {
+    font-size: 13px;
+}
