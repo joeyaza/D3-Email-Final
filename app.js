@@ -267,7 +267,7 @@ var svg = d3.select("#bar-chart").append("svg")
 
 (function(d3) {
 
-// set the dimensions and margins of the graph
+
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
@@ -279,7 +279,15 @@ var parseTime = d3.timeParse("%d-%b-%y");
 var x = d3.scaleTime().range([0, width]);
 var y = d3.scaleLinear().range([height, 0]);
 
+// define the 1st line
+var valueline = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.Jan); });
 
+// define the 2nd line
+var valueline2 = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.Xmas); });
 
 // append the svg obgect to the body of the page
 // appends a 'group' element to 'svg'
@@ -291,141 +299,47 @@ var svg = d3.select("body").append("svg")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-
 // Get the data
-    var readDate = d3.timeParse('%d/%m/%Y');    
-    var writeDate = d3.timeFormat('%d-%b');
+d3.csv("data-doc.csv", function(error, data) {
+  if (error) throw error;
+  console.log(data)
 
-  d3.csv("data.csv", function(data) {
-  dataObj = data;
-  dataObj.forEach(function(d){
-      d.Click_date = readDate(d['Click Date']);
-      delete d['Click Date'];    //remove the original
+  // format the data
+  data.forEach(function(d) {
+      d.date = parseTime(d.Date);
+      d.Jan = +d.January;
+      d.Xmas = +d.Xmas;
   });
 
-
-  var clicksPerDate = d3.nest()
-    .key(function(d) { return d.Click_date})
-    .rollup(function(leaves){
-        return d3.sum(leaves, function(d) {
-          return d.clickedFlag;
-       })
-      })
-    .entries(dataObj)
-
-// console.log('1', clicksPerDate)
-
- clicksPerDate = clicksPerDate.map(function(d){
-             return { key: new Date(d.key),
-                      value: d.value}
-         })
-
-
-// console.log('2', clicksPerDate)
-
-    var dataObj = dataObj.filter(function (el) {
-        return (el.Campaign != "Unknown" );
-    }); 
-
-    var maxDate = d3.max(dataObj, d => d.Click_date);
-    var minDate = d3.min(dataObj, d => d.Click_date);
-
-    var minClicks = d3.min(clicksPerDate, d => d.value);
-    var maxClicks = d3.max(clicksPerDate, d => d.value);
-
-
-  var clicksByDate = d3.nest()
-    .key(function(d) { return d.Campaign;})
-    .key(function(d) { return d.Click_date;})
-    .rollup(function(leaves){
-        return d3.sum(leaves, function(d) {
-          return d.clickedFlag;
-       })
-      })
-    .entries(dataObj)
-
-// console.log(clicksByDate)
-
-    janClicks = clicksByDate[0];
-    janClicks = janClicks.values;
-    XmasClicks = clicksByDate[1];
-    XmasClicks = XmasClicks.values;
-
-    console.log(XmasClicks)
-
-      XmasClicks.forEach(function(d) {
-        d.Xmasdate = new Date(d.key);
-        d.Xmasclicks = d.value;
-        delete d.value;
-        delete d.key;
-      });
-      janClicks.forEach(function(d) {
-        d.Jandate = new Date(d.key);
-        d.Janclicks = d.value;
-        delete d.value;
-        delete d.key;
-      });
-
-       XmasClicks.sort(function(a,b){
-          var c = new Date(a.Xmasdate);
-          var d = new Date(b.Xmasdate);
-          return c-d;
-      });
-
-       janClicks.sort(function(a,b){
-          var c = new Date(a.Jandate);
-          var d = new Date(b.Jandate);
-          return c-d;
-      });
-
-var valueline = d3.line()
-  .x(function(d) { return x(d.Jandate); })
-  .y(function(d) { return y(d.Janclicks); });
-
-// define the 2nd line
-var valueline2 = d3.line()
-  .x(function(d) { return x(d.Xmasdate); })
-  .y(function(d) { return y(d.Xmasclicks); });
-
-// Add the valueline path.
-svg.append("path")
-    .data([janClicks])
-    .attr("class", "line")
-    .attr("d", valueline);
-
-// Add the valueline2 path.
-svg.append("path")
-    .data([XmasClicks])
-    .attr("class", "line")
-    .style("stroke", "red")
-    .attr("d", valueline2);
-
-
+    console.log(data[0].date)
 
   // Scale the range of the data
-  x.domain([minDate, maxDate])
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain([0, d3.max(data, function(d) {
+    return Math.max(d.Jan, d.Xmas); })]);
 
-  y.domain([minClicks +1, maxClicks])
-   
+  // Add the valueline path.
+  svg.append("path")
+      .data([data])
+      .attr("class", "line")
+      .attr("d", valueline);
+
+  // Add the valueline2 path.
+  svg.append("path")
+      .data([data])
+      .attr("class", "line")
+      .style("stroke", "red")
+      .attr("d", valueline2);
+
   // Add the X Axis
   svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x))
-      
+      .call(d3.axisBottom(x));
 
   // Add the Y Axis
   svg.append("g")
       .call(d3.axisLeft(y));
 
-
 });
-
-
-
-
-
-
-
-
 
 })(window.d3);
