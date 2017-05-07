@@ -305,7 +305,6 @@ var svg = d3.select("body").append("svg")
 
 
   var clicksPerDate = d3.nest()
-    // .key(function(d) { return d.Campaign;})
     .key(function(d) { return d.Click_date})
     .rollup(function(leaves){
         return d3.sum(leaves, function(d) {
@@ -314,7 +313,15 @@ var svg = d3.select("body").append("svg")
       })
     .entries(dataObj)
 
-console.log(clicksPerDate)
+// console.log('1', clicksPerDate)
+
+ clicksPerDate = clicksPerDate.map(function(d){
+             return { key: new Date(d.key),
+                      value: d.value}
+         })
+
+
+// console.log('2', clicksPerDate)
 
     var dataObj = dataObj.filter(function (el) {
         return (el.Campaign != "Unknown" );
@@ -326,7 +333,6 @@ console.log(clicksPerDate)
     var minClicks = d3.min(clicksPerDate, d => d.value);
     var maxClicks = d3.max(clicksPerDate, d => d.value);
 
-    console.log(minClicks, maxClicks);
 
   var clicksByDate = d3.nest()
     .key(function(d) { return d.Campaign;})
@@ -338,21 +344,23 @@ console.log(clicksPerDate)
       })
     .entries(dataObj)
 
-
+// console.log(clicksByDate)
 
     janClicks = clicksByDate[0];
     janClicks = janClicks.values;
     XmasClicks = clicksByDate[1];
     XmasClicks = XmasClicks.values;
 
+    console.log(XmasClicks)
+
       XmasClicks.forEach(function(d) {
-        d.Xmasdate = d.key;
+        d.Xmasdate = new Date(d.key);
         d.Xmasclicks = d.value;
         delete d.value;
         delete d.key;
       });
       janClicks.forEach(function(d) {
-        d.Jandate = d.key;
+        d.Jandate = new Date(d.key);
         d.Janclicks = d.value;
         delete d.value;
         delete d.key;
