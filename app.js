@@ -272,8 +272,6 @@ var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-// parse the date / time
-var parseTime = d3.timeParse("%d-%b-%y");
 
 // set the ranges
 var x = d3.scaleTime().range([0, width]);
@@ -282,12 +280,12 @@ var y = d3.scaleLinear().range([height, 0]);
 // define the 1st line
 var valueline = d3.line()
     .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.Jan); });
+    .y(function(d) { return y(d.jan); });
 
 // define the 2nd line
 var valueline2 = d3.line()
     .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.Xmas); });
+    .y(function(d) { return y(d.xmas); });
 
 // append the svg obgect to the body of the page
 // appends a 'group' element to 'svg'
@@ -300,35 +298,81 @@ var svg = d3.select("body").append("svg")
           "translate(" + margin.left + "," + margin.top + ")");
 
 // Get the data
-d3.csv("data-doc.csv", function(error, data) {
-  if (error) throw error;
-  console.log(data)
+d3.csv(
+  "data.csv", 
+  function convertRow(row) {
+    // columns are: Campaign,Click Date,clicked
+    return {
+      campaign: row.Campaign,
+      date: row['Click Date'],
+      clicked: parseInt(row.clickedFlag, 10)
+    };
+  }, 
+  function onData(err, data) {
+    const totals = data.reduce(function (byDate, entry) {
+      // make sure we have a record for this date
+      if (!byDate[entry.date]) {
+        byDate[entry.date] = { date: entry.date }
+      }
+      // make sure we have a total for this campaign
+      if (!byDate[entry.date][entry.campaign]) {
+        byDate[entry.date][entry.campaign] = 0
+      }
+      // increment the total for this campaign
+      byDate[entry.date][entry.campaign] += entry.clicked
+
+      return byDate
+    }, {})
+    
+    var data = Object.values(totals)
+
+        var data = data.filter(function (el) {
+            return (!el.Unknown);
+        }); 
+
+// parse the date / time
+var parseDate = d3.timeParse("%d/%m/%Y");
 
   // format the data
   data.forEach(function(d) {
-      d.date = parseTime(d.Date);
-      d.Jan = +d.January;
-      d.Xmas = +d.Xmas;
+      d.date = parseDate(d.date);
+      d.jan = d['JAN SALES'];
+      d.xmas = d.XMAS;
+      if (d.jan === undefined) {
+        d.jan = null;
+      }
+      if (d.xmas === undefined) {
+        d.xmas = null;
+      }
   });
 
-    console.log(data[0].date)
+  data.sort(function(a,b){
+       var c = a.date;
+       var d = b.date;
+       return c-d;
+  });
+
+ data.splice(-1,1);
 
   // Scale the range of the data
   x.domain(d3.extent(data, function(d) { return d.date; }));
   y.domain([0, d3.max(data, function(d) {
-    return Math.max(d.Jan, d.Xmas); })]);
+    return Math.max(d.jan, d.xmas); })]);
+
+  // y.domain([[Math.min(d.jan, d.xmas)], [Math.max(d.jan, d.xmas)]);
 
   // Add the valueline path.
   svg.append("path")
       .data([data])
       .attr("class", "line")
+      .style("stroke", "turquoise")
       .attr("d", valueline);
 
   // Add the valueline2 path.
   svg.append("path")
       .data([data])
       .attr("class", "line")
-      .style("stroke", "red")
+      .style("stroke", "blue")
       .attr("d", valueline2);
 
   // Add the X Axis
