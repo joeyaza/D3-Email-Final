@@ -4,13 +4,13 @@
 (function(d3) {
         'use strict';
 
+var dataObj;
 var margin = {
     top: 40,
     right: 55,
     bottom: 35,
     left: 90
 };
-var dataObj;
 var width = 600 - margin.left - margin.right,
     height = 360 - margin.top - margin.bottom;
 
@@ -97,6 +97,7 @@ var svg = d3.select("#bar-chart").append("svg")
     .text(function (d) {
         return d.Value;
     });
+
 });
 })(window.d3);
 
@@ -256,24 +257,23 @@ var svg = d3.select("#bar-chart").append("svg")
 //////////////////////////////////////////////////////////
 
 (function(d3) {
-
-
-var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 1200 - margin.left - margin.right,
-    height = 360 - margin.top - margin.bottom;
+  'use strict';
+var margin = {top: 20, right: 20, bottom: 50, left: 50},
+    width = 1000 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 var legendRectSize = 18;
 var legendSpacing = 4;
 
-
-// set the ranges
 var x = d3.scaleTime().range([0, width]);
 var y = d3.scaleLinear().range([height, 0]);
 
 var valueline = d3.line()
+    .defined(function(d) { return d.jan != 0; })
     .x(function(d) { return x(d.date); })
     .y(function(d) { return y(d.jan); });
 
 var valueline2 = d3.line()
+    .defined(function(d) { return d.xmas != 0; })
     .x(function(d) { return x(d.date); })
     .y(function(d) { return y(d.xmas); });
 
@@ -285,7 +285,6 @@ var svg = d3.select("#line-graph").append("svg")
           "translate(" + margin.left + "," + margin.top + ")");
 
 d3.csv("data.csv", function convertRow(row) {
-    // columns are: Campaign,Click Date,clicked
     return {
       campaign: row.Campaign,
       date: row['Click Date'],
@@ -317,6 +316,7 @@ var parseDate = d3.timeParse("%d/%m/%Y");
       d.date = parseDate(d.date);
       d.jan = d['JAN SALES'];
       d.xmas = d.XMAS;
+      delete d.XMAS;   
       if (d.jan === undefined) {
         d.jan = 0;
       }
@@ -331,6 +331,7 @@ var parseDate = d3.timeParse("%d/%m/%Y");
        return c-d;
   });
 
+//removing stray 'unknown'
  data.splice(-1,1);
 
   x.domain(d3.extent(data, function(d) { return d.date; }));
@@ -352,31 +353,14 @@ var parseDate = d3.timeParse("%d/%m/%Y");
   svg.append("g")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(x)
-      .ticks(22));
+      .ticks(22))
+      .selectAll("text")  
+        .style("text-anchor", "end")
+        .attr("transform", "rotate(-60)");
 
   svg.append("g")
       .call(d3.axisLeft(y)
         .ticks(7));
-
-
-//   var legend = svg.selectAll('.legend')
-//     .data(color.domain())
-//     .enter()
-//     .append('g')
-//     .attr('class', 'legend')
-//     .attr('transform', function(d, i) {
-//       var height = legendRectSize + legendSpacing
-//       var offset =  height * color.domain().length + 10;
-//       var horz =   legendRectSize + 200;
-//       var vert = i * height - offset - 70;
-//       return 'translate(' + horz + ',' + vert + ')';
-//     });
-
-// legend.append('rect')
-//   .attr('width', legendRectSize)
-//   .attr('height', legendRectSize)                                   
-//   .style('fill', color)
-//   .style('stroke', color);
 
 });
 

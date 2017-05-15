@@ -2,38 +2,8 @@ body {
   font-family: "Arial", sans-serif;
 }
 
-#donut {
-  display: inline;
-}
-
-#bar-chart {
-  display: inline;
-}
-
-path.line {
-fill: none;
-stroke: #000;
-stroke-width: 3px;
-}
-
 svg {
     border: 2px solid grey;
-}
-
-.bar {
-    fill: blue;
-}
-
-.axis {
-    font-size: 13px;
-}
-
-path.domain, .tick line {
-  display: none;
-}
-
-.label {
-    font-size: 13px;
 }
 
 .tooltip {
@@ -50,9 +20,12 @@ path.domain, .tick line {
   width: 80px;
   z-index: 10;
 }
-.legend {
-  font-size: 12px;
-}
+
+h1 {                                                            
+  font-size: 14px;                                              
+  text-align: center;                                           
+}  
+
 rect {
   cursor: pointer;                                              
   stroke-width: 2;
@@ -60,7 +33,47 @@ rect {
 rect.disabled {                                                 
   fill: transparent !important;                                 
 }                                                               
-h1 {                                                            
-  font-size: 14px;                                              
-  text-align: center;                                           
-}                                   
+     
+
+/*donut*/
+
+#donut {
+  display: inline;
+}
+
+.legend {
+  font-size: 12px;
+}
+
+/*Bar chart*/
+
+#bar-chart {
+  display: inline;
+}
+
+
+.bar {
+    fill: blue;
+}
+
+/*Line Graph*/
+
+
+path.line {
+fill: none;
+stroke: #000;
+stroke-width: 4px;
+}
+
+.axis {
+    font-size: 13px;
+}
+
+path.domain, .tick line {
+  display: none;
+}
+
+.label {
+    font-size: 13px;
+}
+                            
